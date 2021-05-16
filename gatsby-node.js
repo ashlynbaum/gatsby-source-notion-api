@@ -12,3 +12,39 @@
  * See: https://www.gatsbyjs.com/docs/creating-a-local-plugin/#developing-a-local-plugin-that-is-outside-your-project
  */
 exports.onPreInit = () => console.log("Loaded gatsby-starter-plugin")
+
+// constants for your GraphQL Post and Author types
+const POST_NODE_TYPE = `Post`
+
+exports.sourceNodes = async ({
+  actions,
+  createContentDigest,
+  createNodeId,
+  getNodesByType,
+}) => {
+  const { createNode } = actions
+
+  const data = {
+    posts: [
+      { id: 1, description: `Hello world!` },
+      { id: 2, description: `Second post!` },
+    ],
+  }
+
+  // loop through data and create Gatsby nodes
+  data.posts.forEach(post =>
+    createNode({
+      ...post,
+      id: createNodeId(`${POST_NODE_TYPE}-${post.id}`),
+      parent: null,
+      children: [],
+      internal: {
+        type: POST_NODE_TYPE,
+        content: JSON.stringify(post),
+        contentDigest: createContentDigest(post),
+      },
+    })
+  )
+
+  return
+}
