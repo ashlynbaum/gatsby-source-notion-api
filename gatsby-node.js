@@ -25,6 +25,8 @@ exports.sourceNodes = async ({
   const { createNode } = actions
 
   const data = {
+
+    // notion database ID 2eb7999026f1465ea58832e1620dcdb6
     posts: [
       { id: 1, description: `Hello world!` },
       { id: 2, description: `Second post!` },
