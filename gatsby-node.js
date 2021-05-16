@@ -20,14 +20,14 @@ const client = new ApolloClient({
         )
       },
       new WebSocketLink({
-        uri: `ws://gatsby-source-plugin-api.glitch.me/`
+        uri: `ws://gatsby-source-plugin-api.glitch.me/`,
         options: {
           reconnect: true,
         },
         webSocketImpl: WebSocket,
       }),
       new HttpLink({
-        uri: "https://gatsby-source-plugin-api.glitch.me/"
+        uri: "https://gatsby-source-plugin-api.glitch.me/",
         fetch,
       })
     ),
@@ -42,14 +42,27 @@ exports.sourceNodes = async ({
 }) => {
   const { createNode } = actions
 
-  const data = {
-
-    // notion database ID 2eb7999026f1465ea58832e1620dcdb6
-    posts: [
-      { id: 1, description: `Hello world!` },
-      { id: 2, description: `Second post!` },
-    ],
-  }
+  const { data } = await client.query({
+    query: gql`
+      query {
+        posts {
+          id
+          description
+          slug
+          imgUrl
+          imgAlt
+          author {
+            id
+            name
+          }
+        }
+        authors {
+          id
+          name
+        }
+      }
+    `,
+  })
 
   // loop through data and create Gatsby nodes
   data.posts.forEach(post =>
