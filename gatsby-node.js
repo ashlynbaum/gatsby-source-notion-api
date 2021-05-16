@@ -1,20 +1,38 @@
-/**
- * Implement Gatsby's Node APIs in this file.
- *
- * See: https://www.gatsbyjs.com/docs/node-apis/
- */
-// You can delete this file if you're not using it
+const { ApolloClient, InMemoryCache, gql, split, HttpLink } = require("@apollo/client")
+const { WebSocketLink } = require("@apollo/client/link/ws")
+const { getMainDefinition } = require("@apollo/client/utilities")
+const WebSocket = require("ws")
+const fetch = require("node-fetch")
 
-/**
- * You can uncomment the following line to verify that
- * your plugin is being loaded in your site.
- *
- * See: https://www.gatsbyjs.com/docs/creating-a-local-plugin/#developing-a-local-plugin-that-is-outside-your-project
- */
-exports.onPreInit = () => console.log("Loaded gatsby-starter-plugin")
+
+exports.onPreInit = () => console.log("Loaded gatsby-source-notion-api")
 
 // constants for your GraphQL Post and Author types
 const POST_NODE_TYPE = `Post`
+
+const client = new ApolloClient({
+    link: split(
+      ({ query }) => {
+        const definition = getMainDefinition(query)
+        return (
+          definition.kind === "OperationDefinition" &&
+          definition.operation === "subscription"
+        )
+      },
+      new WebSocketLink({
+        uri: `ws://gatsby-source-plugin-api.glitch.me/`
+        options: {
+          reconnect: true,
+        },
+        webSocketImpl: WebSocket,
+      }),
+      new HttpLink({
+        uri: "https://gatsby-source-plugin-api.glitch.me/"
+        fetch,
+      })
+    ),
+    cache: new InMemoryCache(),
+  })
 
 exports.sourceNodes = async ({
   actions,

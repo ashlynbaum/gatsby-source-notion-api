@@ -12,5 +12,12 @@
     "gatsby-plugin"
   ],
   "author": "Ashlyn Baum <hey@ashlyn.app>",
-  "license": "0BSD"
+  "license": "0BSD",
+  "dependencies": {
+    "@apollo/client": "^3.3.18",
+    "graphql": "^15.5.0",
+    "node-fetch": "^2.6.1",
+    "subscriptions-transport-ws": "^0.9.18",
+    "ws": "^7.4.5"
+  }
 }
