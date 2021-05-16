@@ -3,6 +3,7 @@ const { WebSocketLink } = require("@apollo/client/link/ws")
 const { getMainDefinition } = require("@apollo/client/utilities")
 const WebSocket = require("ws")
 const fetch = require("node-fetch")
+const { createRemoteFileNode } = require(`gatsby-source-filesystem`)
 
 
 exports.onPreInit = () => console.log("Loaded gatsby-source-notion-api")
@@ -34,50 +35,74 @@ const client = new ApolloClient({
     cache: new InMemoryCache(),
   })
 
-exports.sourceNodes = async ({
-  actions,
-  createContentDigest,
-  createNodeId,
-  getNodesByType,
-}) => {
-  const { createNode } = actions
+	exports.sourceNodes = async ({
+		actions,
+		createContentDigest,
+		createNodeId,
+		getNodesByType,
+		},
+		pluginOptions
+	) => {
+		const { createNode } = actions
+		console.log(pluginOptions.tableID) // tableID looks like 2eb7999026f1465ea58832e1620dcdb6
+		const { data } = await client.query({
+			query: gql`
+				query {
+					posts {
+						id
+						description
+						slug
+						imgUrl
+						imgAlt
+						author {
+							id
+							name
+						}
+					}
+					authors {
+						id
+						name
+					}
+				}
+			`,
+		})
 
-  const { data } = await client.query({
-    query: gql`
-      query {
-        posts {
-          id
-          description
-          slug
-          imgUrl
-          imgAlt
-          author {
-            id
-            name
-          }
-        }
-        authors {
-          id
-          name
-        }
-      }
-    `,
-  })
-
-  // loop through data and create Gatsby nodes
-  data.posts.forEach(post =>
-    createNode({
-      ...post,
-      id: createNodeId(`${POST_NODE_TYPE}-${post.id}`),
-      parent: null,
-      children: [],
-      internal: {
-        type: POST_NODE_TYPE,
-        content: JSON.stringify(post),
-        contentDigest: createContentDigest(post),
-      },
-    })
-  )
+		// loop through data and create Gatsby nodes
+		data.posts.forEach(post =>
+			createNode({
+				...post,
+				id: createNodeId(`${POST_NODE_TYPE}-${post.id}`),
+				parent: null,
+				children: [],
+				internal: {
+					type: POST_NODE_TYPE,
+					content: JSON.stringify(post),
+					contentDigest: createContentDigest(post),
+				},
+			})
+		)
 
   return
 }
+
+  // called each time a node is created
+	exports.onCreateNode = async ({
+    node, // the node that was just created
+    actions: { createNode },
+    createNodeId,
+    getCache,
+  }) => {
+    if (node.internal.type === POST_NODE_TYPE) {
+      const fileNode = await createRemoteFileNode({
+        // the url of the remote image to generate a node for
+        url: node.imgUrl,
+        parentNodeId: node.id,
+        createNode,
+        createNodeId,
+        getCache,
+      })
+      if (fileNode) {
+        node.remoteImage___NODE = fileNode.id
+      }
+    }
+  }
