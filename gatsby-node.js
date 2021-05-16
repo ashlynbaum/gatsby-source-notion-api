@@ -18,48 +18,58 @@ exports.onPreInit = (_, pluginOptions) => {
 // constants for your GraphQL Post and Author types
 const POST_NODE_TYPE = `Post`
 
+const createNodeId = {
+	
+}
 
-// const client = new ApolloClient({
-//     link: split(
-//       ({ query }) => {
-//         const definition = getMainDefinition(query)
-//         return (
-//           definition.kind === "OperationDefinition" &&
-//           definition.operation === "subscription"
-//         )
-//       },
-//       new WebSocketLink({
-//         uri: `ws://gatsby-source-plugin-api.glitch.me/`,
-//         options: {
-//           reconnect: true,
-//         },
-//         webSocketImpl: WebSocket,
-//       }),
-//       new HttpLink({
-//         uri: "https://api.notion.com/v1/databases/${pluginOptions.tableID}",
-// 				credentials: "pluginOptions.notionKey",
-//         fetch,
-//       })
-//     ),
-//     cache: new InMemoryCache(),
-//   })
 
-	exports.sourceNodes = async ({
-		actions,
-		createContentDigest,
-		createNodeId,
-		getNodesByType,
-		},
-		pluginOptions
-	) => {
-		// const { createNode } = actions
-		const notion = new Client({ auth: pluginOptions.notionKey });
+exports.sourceNodes = async ({
+	actions,
+	createContentDigest,
+	createNodeId,
+	getNodesByType,
+	},
+	pluginOptions
+) => {
+	// const { createNode } = actions
+	const notion = new Client({ auth: pluginOptions.notionKey });
 
-		(async () => {
-			const databaseId = pluginOptions.tableID;
-			const client = await notion.databases.retrieve({ database_id: databaseId });
-			console.log(client);
-		})()
+	(async () => {
+		const databaseId = pluginOptions.tableID;
+		const client = await notion.databases.retrieve({ database_id: databaseId });
+		console.log(client);
+	})();
+	(async () => {
+		const databaseId = pluginOptions.tableID;
+		const response = await notion.databases.query({
+			database_id: databaseId,
+			// filter: {
+			// 	or: [
+			// 		{
+			// 			property: 'In stock',
+			// 			checkbox: {
+			// 				equals: true,
+			// 			},
+			// 		},
+			// 		{
+			// 			property: 'Cost of next trip',
+			// 			number: {
+			// 				greater_than_or_equal_to: 2,
+			// 			},
+			// 		},
+			// 	],
+			// },
+			// sorts: [
+			// 	{
+			// 		property: 'Last ordered',
+			// 		direction: 'ascending',
+			// 	},
+			// ],
+		});
+		console.log(response);
+	})();
+
+
 		// const { data } = await client.query({
 		// 	query: gql`
 		// 		query {
